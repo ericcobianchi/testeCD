@@ -3,7 +3,10 @@ const fileSystem = require("fs");
 const logFilePath = __dirname + "/../../assets/games.log";
 const logFile = readLogFile(logFilePath);
 
+let games = [];
 let playing = false;
+let currentGame = {};
+let ranking = {};
 
 function generateLogGame() {
   logFile.forEach(line => {
@@ -30,17 +33,17 @@ function processIfGameIsStarting(line) {
 
 function processIfGameIsFinishig(line) {
   if ((line.includes("shutdownGame") || line.includes("InitGame")) && playing) {
-    finishingGame();
-    game.push(currentGame);
+    finishGame();
+    games.push(currentGame);
     resetCurrentGame();
     return true;
   }
 }
 
 function processIfThereIsANewPlayer(line) {
-  if (line.includes(" n\\")) {
-    player = line.match(regexGame.player)[0];
-    if (!currentGame.players.include(player)) {
+  if (line.includes("n\\")) {
+    player = identifyPlayer(line);
+    if (!currentGame.players.includes(player)) {
       currentGame.players.push(player);
     }
     if (!currentGame.kills[player]) {
@@ -54,9 +57,9 @@ function processIfthereIsADeath(line) {
   if (line.includes("killed")) {
     currentGame.total_kills++;
 
-    let playerWhoKilled = line.match(regexGame.playerWhoKilled)[0];
-    let playerWhoDied = line.match(regexGame.playerWhoDied)[0];
-    let deathCause = line.match(regexGame.deathCause)[0];
+    let playerWhoKilled = identifyKiller(line);
+    let playerWhoDied = identifyKilled(line);
+    let deathCause = identifyDeathCause(line);
 
     if (processIfWasKilledByTheWorld(playerWhoKilled, playerWhoDied)) {
       return true;
@@ -87,25 +90,25 @@ function processDeathCause(deathCause) {
   }
 }
 
-function addDeathToTheCurrentGame(playerWhoKilled){
-  if (currentGame.kills[playerWhoKilled]){
-    currentGame.kills(playerWhoKilled)++;
-  }else{
-    currentGame.kills(playerWhoKilled) = 1;
+function addDeathToTheCurrentGame(playerWhoKilled) {
+  if (currentGame.kills[playerWhoKilled]) {
+    currentGame.kills[playerWhoKilled]++;
+  } else {
+    currentGame.kills[playerWhoKilled] = 1;
   }
 }
 
-function addDeathToTheRanking(playerWhoKilled){
-  if(ranking[playerWhoKilled]){
+function addDeathToTheRanking(playerWhoKilled) {
+  if (ranking[playerWhoKilled]) {
     ranking[playerWhoKilled]++;
-  }else{
+  } else {
     ranking[playerWhoKilled] = 1;
   }
 }
 
-function resetCurrentGame(){
+function resetCurrentGame() {
   currentGame = currentGame = {
-    total_kills:0,
+    total_kills: 0,
     players: [],
     kills: {},
     death_cause: {}
@@ -138,6 +141,14 @@ function identifyPlayer(logLine) {
   let regexPlayerIdentification = /(?<=n\\)(.*?)(?=\\t)/;
   let playerIdentification = logLine.match(regexPlayerIdentification)[0];
   return playerIdentification;
+}
+
+function startGame() {
+  playing = true;
+}
+
+function finishGame() {
+  playing = false;
 }
 
 module.exports = {
