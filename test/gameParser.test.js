@@ -10,8 +10,24 @@ test("The killer must be batatinha22", () => {
 
 test("the player who died must be arnold", () => {
   expect(
-    gameParser.identifykilled(
+    gameParser.identifyKilled(
       "11:23 Kill: 2 5 6: Isgalamido killed arnold by MOD_ROCKET"
     )
   ).toBe("arnold");
+});
+
+test("the player death cause", () => {
+  expect(
+    gameParser.identfyDeathCause(
+      " 11:41 Kill: 3 4 7: Oootsimo killed Dono da Bola by MOD_ROCKET_SPLASH"
+    )
+  ).toBe("MOD_ROCKET_SPLASH");
+});
+
+test("the player identification", () => {
+  expect(
+    gameParser.identifyPlayer(
+      `21:53 ClientUserinfoChanged: 3 n\\Mocinha\\t\\0modelsargehmodelsargeg_redteam\\g_blueteam`
+    )
+  ).toBe("Mocinha");
 });
