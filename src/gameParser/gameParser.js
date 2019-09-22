@@ -1,6 +1,6 @@
-const fileSystem = require("fs");
+const fileSystem = require('fs');
 
-const logFilePath = __dirname + "/../../assets/games.log";
+const logFilePath = __dirname + '/../../assets/games.log';
 const logFile = readLogFile(logFilePath);
 
 let games = [];
@@ -9,6 +9,7 @@ let currentGame = {};
 let ranking = {};
 
 function generateLogGame() {
+  resetRanking();
   logFile.forEach(line => {
     if (processIfGameIsStarting(line)) return;
     if (processIfGameIsFinishig(line)) return;
@@ -24,7 +25,7 @@ function generateLogGame() {
 }
 
 function processIfGameIsStarting(line) {
-  if (line.includes("InitGame") && !playing) {
+  if (line.includes('InitGame') && !playing) {
     resetCurrentGame();
     startGame();
     return true;
@@ -32,7 +33,7 @@ function processIfGameIsStarting(line) {
 }
 
 function processIfGameIsFinishig(line) {
-  if ((line.includes("shutdownGame") || line.includes("InitGame")) && playing) {
+  if ((line.includes('shutdownGame') || line.includes('InitGame')) && playing) {
     finishGame();
     games.push(currentGame);
     resetCurrentGame();
@@ -40,8 +41,12 @@ function processIfGameIsFinishig(line) {
   }
 }
 
+function resetRanking() {
+  ranking = {};
+}
+
 function processIfThereIsANewPlayer(line) {
-  if (line.includes("n\\")) {
+  if (line.includes('n\\')) {
     player = identifyPlayer(line);
     if (!currentGame.players.includes(player)) {
       currentGame.players.push(player);
@@ -54,9 +59,8 @@ function processIfThereIsANewPlayer(line) {
 }
 
 function processIfthereIsADeath(line) {
-  if (line.includes("killed")) {
+  if (line.includes('killed')) {
     currentGame.total_kills++;
-
     let playerWhoKilled = identifyKiller(line);
     let playerWhoDied = identifyKilled(line);
     let deathCause = identifyDeathCause(line);
@@ -73,7 +77,7 @@ function processIfthereIsADeath(line) {
 }
 
 function processIfWasKilledByTheWorld(playerWhoKilled, playerWhoDied) {
-  if (playerWhoKilled === "<world>") {
+  if (playerWhoKilled === '<world>') {
     if (currentGame.kills[playerWhoDied] && ranking[playerWhoDied]) {
       currentGame.kills[playerWhoDied]--;
       ranking[playerWhoDied]--;
@@ -116,7 +120,7 @@ function resetCurrentGame() {
 }
 
 function readLogFile(filePath) {
-  return fileSystem.readFileSync(logFilePath, "utf-8").split("\n");
+  return fileSystem.readFileSync(logFilePath, 'utf-8').split('\n');
 }
 
 function identifyKiller(logLine) {
